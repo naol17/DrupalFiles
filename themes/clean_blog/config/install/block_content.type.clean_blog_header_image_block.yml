@@ -1,0 +1,7 @@
+langcode: en
+status: true
+dependencies: {  }
+id: clean_blog_header_image_block
+label: 'Clean Blog Header Image Block'
+revision: 0
+description: 'This block will provide the settings to configure the Header Banner images for the pages. '

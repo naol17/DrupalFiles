@@ -1,0 +1,56 @@
+<?php
+use Drupal\block\Entity\Block;
+/**
+ * @file
+ * Bootstrap sub-theme.
+ *
+ * Place your custom PHP code in this file.
+ */
+
+/**
+ * Implements hook_preprocess_page()
+ */
+function clean_blog_preprocess_page(array &$variables) {
+  // Load the site name out of configuration.
+  $test = $variables;
+  $config = \Drupal::config('system.site');
+  $variables['site_name'] = $config->get('name');
+  $variables['site_slogan'] = $config->get('slogan');
+  if (isset($variables['node'])) {
+    $node = $variables['node'];
+    $node_type = $node->type->entity;
+    $variables['display_submitted'] = $node_type->displaySubmitted();
+  }
+  if (!empty($variables['page']['cleanblockheader'])){
+    foreach ($variables['page']['cleanblockheader'] as $key => $clean_blocks ){
+      if (in_array($key, ['#sorted', '#theme_wrappers', '#region'])){
+        continue;
+      }
+      else {
+        $block_config = Block::load($key);
+        $uuid = $block_config->getPlugin()->getDerivativeId();
+        $block_content = \Drupal::service('entity.repository')->loadEntityByUuid('block_content', $uuid);
+        if ($block_content) {
+          $variables['clean_image'] = file_create_url($block_content->field_clean_blog_header_image->entity->uri->value);
+          $variables['clean_color'] = $block_content->field_clean_blog_header_backgrou->value;
+          break;
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_uninstall()
+ */
+function clean_blog_uninstall(){
+  //Deleting the views configuration.
+  \Drupal::configFactory()->getEditable('views.view.blogs_hom')->delete();
+  \Drupal::configFactory()->getEditable('block_content.type.clean_blog_header_image_block')->delete();
+  \Drupal::configFactory()->getEditable('core.entity_form_display.block_content.clean_blog_header_image_block.default')->delete();
+  \Drupal::configFactory()->getEditable('core.entity_view_display.block_content.clean_blog_header_image_block.default')->delete();
+  \Drupal::configFactory()->getEditable('field.field.block_content.clean_blog_header_image_block.field_clean_blog_header_backgrou')->delete();
+  \Drupal::configFactory()->getEditable('field.field.block_content.clean_blog_header_image_block.field_clean_blog_header_image')->delete();
+  \Drupal::configFactory()->getEditable('field.storage.block_content.field_clean_blog_header_backgrou')->delete();
+  \Drupal::configFactory()->getEditable('field.storage.block_content.field_clean_blog_header_image')->delete();
+}
